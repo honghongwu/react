@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>07_state_demo</title>
+</head>
+<body>
+  <div>
+    <h2>Simple TODO List</h2>
+    <input type="text">
+    <button>Add #4</button>
+    <ul>
+      <li>吃饭</li>
+      <li>睡觉</li>
+      <li>打豆豆</li>
+    </ul>
+  </div>
+  <hr>
+
+  <div id="example">在此实现页面效果和功能</div>
+
+  <script src="../js/react.js"></script>
+  <script src="../js/react-dom.js"></script>
+  <script src="../js/babel.min.js"></script>
+  <script type="text/babel">
+
+
+
+    //定义App组件
+   class App extends React.Component{
+       constructor(props){
+           super(props)
+           //1 初始化私有数据而不是继承外部数据所以用state
+           this.state={
+               todos:['吃饭','喝酒']
+           }
+           //更改add中this指向
+           this.add = this.add.bind(this)
+       }
+       //6-2add()函数在实例对象的原型上，通过类的一般方法在原型上找到
+       //在render中通过标签属性定义方法 <AddTodo add={this.add}/> 传给AddTodo
+       //this.add就是 add(){}，在AddTODO中就可以找到这个函数，定义给形参newTodo
+
+       add(newTodo){
+           //更新状态
+           let todos =this.state.todos
+           //将新的状态放到首个
+           todos.unshift(newTodo)
+           //todos：todos，同名属性省略不写  在上面更改this指向
+           this.setState({todos})
+
+     }
+       render(){
+       //2 在上面初始化了数据在这里可以拿到，因为在App中能看到TodoList,是
+       //组件外部向组件内部以标签属性的形式传递数据:let {todos}向<TodoList/>传递
+       //以   <TodoList XXX={value值}/> 形式定义传递到TodoList
+       //8-1 修改#4  <AddTodo length={todos.length}
+        let {todos} = this.state
+           return(
+               <div>
+                 <h2>Simple TODO List</h2>
+                 <AddTodo add={this.add} length={todos.length} />
+                 <TodoList todos={todos}/>
+               </div>
+           )
+       }
+     }
+    //定义AddTodo组件
+    //5 定义标签中绑定的onClick方法，起名字this.addTodo,之后定义该方法
+    //事件在button上，没有办法用event.target得到，可以在input标签中用ref,
+    //在addTodo方法中this.refs.newTodo.value收集数据
+    //6-1数据初始在App中，AddTodo是内部组件，内部不能给外部传，可以通过App中add(){}
+    // 函数可以传参方式给Addtodo传数据
+
+    class AddTodo extends React.Component{
+        constructor(props){
+            super(props)
+            //修改addTodos中this的 指向
+            this.addTodo=this.addTodo.bind(this)
+        }
+        addTodo(){
+     //收集数据
+      let newTodo=this.refs.newTodo.value
+      //判断用户的输入
+        if(!newTodo.trim()){
+          alert('不能空')
+          return
+        }
+     //6-3可以找到add()这个函数并调用并传实参newTodo，这样就可以通过外部定义函数
+     //内部调用函数的方式由内部向外部传参,将数据传给APP，传递后可销毁
+      this.props.add(newTodo)
+     //7 销毁时不能用 newTodo=‘’因为不能改变
+     //8-2 #4 以标签属性的方式传来的值通过this.props.XX取
+      this.refs.newTodo.value=''
+      }
+        render(){
+            return(
+                    <div>
+                      <input ref='newTodo'type="text"/>
+                      <button onClick={this.addTodo}>Add #{this.props.length}</button>
+                    </div>
+            )
+         }
+     }
+    //定义TodoList组件
+
+    class TodoList extends React.Component{
+        constructor(){
+            super()
+        }
+        render(){
+    //3在这里拿到传递的数据，数据保存在当前组件的props属性中，这下可以遍历取到
+            let {todos} = this.props;
+            return(
+                    <ul>
+                        {
+
+    //箭头函数不用{},直接就可以调用 加上{}需要用retrun
+                    todos.map((item,index)=> <li key={index}>{item}</li>)
+                        }
+                    </ul>
+            )
+        }
+     }
+  ReactDOM.render(<App />, document.getElementById('example'));
+  </script>
+</body>
+</html>
+
